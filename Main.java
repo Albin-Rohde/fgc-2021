@@ -12,11 +12,11 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Motor;
+import org.firstinspires.ftc.teamcode.Drive;
 
 @TeleOp(name="Main", group="Linear Opmode")
 public class Main extends LinearOpMode {
   public boolean running = false;
-
   // utils
   private ElapsedTime runtime = new ElapsedTime();
   private ElapsedTime runtime2 = new ElapsedTime();
@@ -24,12 +24,8 @@ public class Main extends LinearOpMode {
   int posPerRound = 27;
   int posIncremt = posPerRound * gearLevel; // 81 //  27 * 3 = 81
 
-
   // Motors
-  private Motor motor1 = null;
-  private Motor motor2 = null;
-  private Motor motor3 = null;
-  private Motor motor4 = null;
+  private Drive driver = null;
   private Servo servo1 = null;
 
   // Other devices
@@ -50,63 +46,21 @@ public class Main extends LinearOpMode {
     m3 = hardwareMap.get(DcMotor.class, "3");
     m4 = hardwareMap.get(DcMotor.class, "4");
 
-    this.motor1 = new Motor(m1, true);
-    this.motor2 = new Motor(m2, false);
-    this.motor3 = new Motor(m3, true);
-    this.motor4 = new Motor(m4, false);
+    Motor motor1 = new Motor(m1, false); //vb
+    Motor motor2 = new Motor(m2, false);//hb
+    Motor motor3 = new Motor(m3, false); //vf
+    Motor motor4 = new Motor(m4, false); //hf
+
+    this.driver = new Drive(motor1, motor2, motor3, motor4);
 
     rangeSensor = hardwareMap.get(DistanceSensor.class, "rs");
     servo1 = hardwareMap.get(Servo.class, "steer");
   }
 
-  private void driveForward() {
-    motor1.setPower(1);
-    motor2.setPower(1);
-    motor3.setPower(1);
-    motor4.setPower(1);
-  }
-
-  private void stopMotor() {
-    motor1.setPower(0);
-    motor2.setPower(0);
-  }
   /*
     The base motor supplies 27 positions per round
     with a level 3 gear that is 27 * 3 positions. 81 positions
    */
-
-  private void emergancyStop() {
-    motor1.setPower(-1);
-    motor2.setPower(-1);
-    motor3.setPower(-1);
-    motor4.setPower(-1);
-
-    boolean keepLoop = true;
-    boolean doneWithM1 = false;
-    boolean doneWithM2 = false;
-
-    int prevPosM1 = motor1.getCurrentPosition();
-    int prevPosM2 = motor2.getCurrentPosition();
-    while(keepLoop) {
-      sleep(1);
-      if (!doneWithM1 && (motor1.getCurrentPosition() > prevPosM1 + 3)) {
-        motor1.setPower(0);
-        doneWithM1 = true;
-      }
-      if (!doneWithM2 && (motor2.getCurrentPosition() < prevPosM2 + 3)) {
-        motor2.setPower(0);
-        doneWithM2 = true;
-      }
-      if (doneWithM2 || doneWithM1) {
-        motor3.setPower(0);
-        motor4.setPower(0);
-      }
-      prevPosM1 = motor1.getCurrentPosition();
-      prevPosM2 = motor2.getCurrentPosition();
-    }
-  }
-
-
 
   @Override
   public void runOpMode() {
@@ -118,6 +72,7 @@ public class Main extends LinearOpMode {
     runtime2.reset();
     waitForStart();
 
+    /*
     int ii = 0;
     running = true;
     int beginPos = motor2.getCurrentPosition();
@@ -131,9 +86,11 @@ public class Main extends LinearOpMode {
     // declaring array
     timeDelta = new int[60];
     tickNumberArray = new int[60];
-
+    */
+    driver.forward();
+    running = true;
+    int c = 0;
     while (opModeIsActive() && running) {
-      driveForward();
       /*
       runtime2.reset();
       int currentPosMotor2 = motor2.getCurrentPosition();
@@ -153,12 +110,18 @@ public class Main extends LinearOpMode {
         runtime.reset();
       }
        */
-      if (rangeSensor.getDistance(DistanceUnit.CM) < 110) {
-        emergancyStop();
+      double distanceCm = rangeSensor.getDistance(DistanceUnit.CM);
+      if (c == 250) {
+        driver.emergencyStop();
+      }
+      if (distanceCm < 110) {
+        telemetry.addData("start brake", distanceCm);
+        driver.emergencyStop();
         telemetry.update();
         sleep(100000000);
         running = false;
       }
+      telemetry.update();
     }
   }
 }

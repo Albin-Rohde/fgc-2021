@@ -11,36 +11,61 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.Config;
+import org.firstinspires.ftc.teamcode.Motor;
 
 
-public class Drive extends Config {
-  private DcMotor motor1 = null;
-  private DcMotor motor2 = null;
-  private DcMotor motor3 = null;
-  private DcMotor motor4 = null;
-  public int m1Speed = 0;
-  public int m2Speed = 0;
-  public int m3Speed = 0;
-  public int m4Speed = 0;
+public class Drive {
+  private Motor m1 = null;
+  private Motor m2 = null;
+  private Motor m3 = null;
+  private Motor m4 = null;
 
-  public Drive(DcMotor m1, DcMotor m2, DcMotor m3, DcMotor m4) {
-    motor1 = m1;
-    motor2 = m2;
-    motor3 = m3;
-    motor4 = m4;
+  public Drive(Motor m1, Motor m2, Motor m3, Motor m4) {
+    this.m1 = m1;
+    this.m2 = m2;
+    this.m3 = m3;
+    this.m4 = m4;
   }
 
-  private setPower(DcMotor m, int speed) {
-    m.setPower(speed * Config.driveMultiplier);
-
+  public void forward() {
+    this.m1.setPower(1);
+    this.m2.setPower(1);
+    this.m3.setPower(1);
+    this.m4.setPower(1);
   }
 
-  public static void DriveForward() {
-    motor2.setPower(1 * Config.driveMultiplier);
-    motor4.setPower(1 * Config.driveMultiplier);
-    motor1.setPower(-1 * Config.driveMultiplier);
-    motor3.setPower(-1 * Config.driveMultiplier);
+  public void backward() {
+    this.m1.setPower(-1);
+    this.m2.setPower(-1);
+    this.m3.setPower(-1);
+    this.m4.setPower(-1);
   }
 
+  public void stop() {
+    this.m1.setPower(0);
+    this.m2.setPower(0);
+    this.m3.setPower(0);
+    this.m4.setPower(0);
+  }
+
+  public void emergencyStop() {
+    boolean doneWithM1 = false;
+    boolean doneWithM2 = false;
+    boolean doneWithM3 = false;
+    boolean doneWithM4 = false;
+
+    while(true) {
+      doneWithM1 = this.m1.brake();
+      doneWithM2 = this.m2.brake();
+      doneWithM3 = this.m3.brake();
+      doneWithM4 = this.m4.brake();
+      if (doneWithM1 || doneWithM2 || doneWithM3 || doneWithM4) {
+        this.m1.setPower(0);
+        this.m2.setPower(0);
+        this.m3.setPower(0);
+        this.m4.setPower(0);
+        return;
+      }
+    }
+  }
 }

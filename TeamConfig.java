@@ -4,5 +4,5 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 @Disabled
 public class TeamConfig {
-  public static double driveMultiplier = 0.2;
+  public static double driveMultiplier = 0.15;
 }

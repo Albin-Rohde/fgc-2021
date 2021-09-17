@@ -12,8 +12,10 @@ public class Motor {
   private DcMotor m;
   private double speedMultiplier = TeamConfig.driveMultiplier;
   private boolean reversed;
-  public double motorPower;
-
+  private double motorPower;
+  private int brakeStartPos;
+  private int maxBrakeDelta;
+  private boolean brakeStarted = false;
 
   public Motor(DcMotor m, boolean reversed) {
     this.m = m;
@@ -31,12 +33,30 @@ public class Motor {
     this.m.setPower(powerSignal);
   }
 
+  public boolean brake () {
+    if (this.motorPower == 0) {
+      this.setPower(0);
+      return true;
+    }
+    int currentDelta = Math.abs(this.m.getCurrentPosition() - this.brakeStartPos);
+    if (!brakeStarted) {
+      this.brakeStartPos = this.m.getCurrentPosition();
+      this.maxBrakeDelta = 0;
+      this.brakeStarted = true;
+      this.m.setPower(((this.motorPower / Math.abs(this.motorPower)) * -1) * 0.3);
+      return false;
+    }
+    if (currentDelta > maxBrakeDelta) {
+      this.maxBrakeDelta = currentDelta;
+    }
+    if (maxBrakeDelta - 3 > currentDelta) {
+      this.setPower(0);
+      return true;
+    }
+    return false;
+  }
 
   public int getCurrentPosition() {
     return this.m.getCurrentPosition();
-  }
-
-  public void stop() {
-    this.m.setPower(0);
   }
 }
