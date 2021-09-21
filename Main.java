@@ -26,10 +26,10 @@ public class Main extends LinearOpMode {
     s1 = hardWareMap.get(Servo.class, "steer");
     sensor = hardWareMap.get(DistanceSensor.class, "rs");
 
-    Motor motor1 = new Motor(m1, false); //vb
-    Motor motor2 = new Motor(m2, false);//hb
-    Motor motor3 = new Motor(m3, false); //vf
-    Motor motor4 = new Motor(m4, false); //hf
+    Motor motor1 = new Motor(m1, true); //left back
+    Motor motor2 = new Motor(m2, false); //right back
+    Motor motor3 = new Motor(m3, true); //left front
+    Motor motor4 = new Motor(m4, false); //right front
     return new Drive(motor1, motor2, motor3, motor4, s1, sensor);
   }
 
@@ -39,8 +39,9 @@ public class Main extends LinearOpMode {
     waitForStart();
     this.running = true;
     driver.startEmergencyBrakeCheck();
-    sleep(1000);
     while (opModeIsActive() && running) {
+      driver.turnStraight();
+      sleep(1000);
       driver.forward();
     }
   }
