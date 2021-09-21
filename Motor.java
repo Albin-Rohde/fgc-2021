@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 @Disabled
 public class Motor {
   private DcMotor m;
-  private double speedMultiplier = TeamConfig.driveMultiplier;
   private boolean reversed;
   private double motorPower;
   private int brakeStartPos;
@@ -26,9 +25,9 @@ public class Motor {
     this.motorPower = pwr;
     double powerSignal = 0;
     if (this.reversed) {
-      powerSignal = (pwr * this.speedMultiplier) * -1;
+      powerSignal = (pwr * TeamConfig.driveMultiplier) * -1;
     } else {
-      powerSignal = (pwr * this.speedMultiplier);
+      powerSignal = (pwr * TeamConfig.driveMultiplier);
     }
     this.m.setPower(powerSignal);
   }
@@ -38,7 +37,6 @@ public class Motor {
       this.setPower(0);
       return true;
     }
-    int currentDelta = Math.abs(this.m.getCurrentPosition() - this.brakeStartPos);
     if (!brakeStarted) {
       this.brakeStartPos = this.m.getCurrentPosition();
       this.maxBrakeDelta = 0;
@@ -46,6 +44,7 @@ public class Motor {
       this.m.setPower(((this.motorPower / Math.abs(this.motorPower)) * -1) * 0.3);
       return false;
     }
+    int currentDelta = Math.abs(this.m.getCurrentPosition() - this.brakeStartPos);
     if (currentDelta > maxBrakeDelta) {
       this.maxBrakeDelta = currentDelta;
     }

@@ -15,40 +15,93 @@ import org.firstinspires.ftc.teamcode.Motor;
 
 
 public class Drive {
+  private boolean running = true;
   private Motor m1 = null;
   private Motor m2 = null;
   private Motor m3 = null;
   private Motor m4 = null;
+  private Servo s1 = null;
+  private DistanceSensor sensor = null;
+  private Thread t1 = null; // t1: thread that checks the sensor and initiates emergency brake
 
-  public Drive(Motor m1, Motor m2, Motor m3, Motor m4) {
+
+  public Drive(
+      Motor m1,
+      Motor m2,
+      Motor m3,
+      Motor m4,
+      Servo s1,
+      DistanceSensor sensor
+    ) {
     this.m1 = m1;
     this.m2 = m2;
     this.m3 = m3;
     this.m4 = m4;
+    this.s1 = s1;
+    this.s1.setPosition(0.5);
+    this.sensor = sensor;
   }
 
   public void forward() {
-    this.m1.setPower(1);
-    this.m2.setPower(1);
-    this.m3.setPower(1);
-    this.m4.setPower(1);
+    if (this.running) {
+      this.m1.setPower(1);
+      this.m2.setPower(1);
+      this.m3.setPower(1);
+      this.m4.setPower(1);
+    }
   }
 
   public void backward() {
-    this.m1.setPower(-1);
-    this.m2.setPower(-1);
-    this.m3.setPower(-1);
-    this.m4.setPower(-1);
+    if (this.running) {
+      this.m1.setPower(-1);
+      this.m2.setPower(-1);
+      this.m3.setPower(-1);
+      this.m4.setPower(-1);
+    }
   }
 
   public void stop() {
-    this.m1.setPower(0);
-    this.m2.setPower(0);
-    this.m3.setPower(0);
-    this.m4.setPower(0);
+    if (this.running) {
+      this.m1.setPower(0);
+      this.m2.setPower(0);
+      this.m3.setPower(0);
+      this.m4.setPower(0);
+    }
+  }
+
+  public void turnLeft() {
+    if (this.running) {
+      this.s1.setPosition(1);
+    }
+  }
+
+  public void turnRight() {
+    if (this.running) {
+      this.s1.setPosition(0);
+    }
+  }
+
+  public void turnStraight() {
+    if (this.running) {
+      this.s1.setPosition(0.5);
+    }
+  }
+
+  public void startEmergencyBrakeCheck() {
+    this.t1 = new Thread(() -> {
+      while (this.running) {
+        double distanceCm = this.sensor.getDistance(DistanceUnit.CM);
+        if (distanceCm < 90) {
+          this.emergencyStop();
+          this.t1.interrupt();
+        }
+      }
+    });
+    this.t1.start();
   }
 
   public void emergencyStop() {
+    this.running = false;
     boolean doneWithM1 = false;
     boolean doneWithM2 = false;
     boolean doneWithM3 = false;
