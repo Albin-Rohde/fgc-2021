@@ -16,30 +16,30 @@ import org.firstinspires.ftc.teamcode.Motor;
 
 public class Drive {
   private boolean running = true;
-  private Motor m1 = null;
-  private Motor m2 = null;
-  private Motor m3 = null;
-  private Motor m4 = null;
+  public Motor m1 = null;
+  public Motor m2 = null;
+  public Motor m3 = null;
+  public Motor m4 = null;
   private Servo s1 = null;
   private DistanceSensor sensor = null;
   private Thread t1 = null; // t1: thread that checks the sensor and initiates emergency brake
 
 
   public Drive(
-      Motor m1,
-      Motor m2,
-      Motor m3,
-      Motor m4,
-      Servo s1,
-      DistanceSensor sensor
-    ) {
+    Motor m1,
+    Motor m2,
+    Motor m3,
+    Motor m4,
+    Servo s1
+    //DistanceSensor sensor
+  ) {
     this.m1 = m1;
     this.m2 = m2;
     this.m3 = m3;
     this.m4 = m4;
     this.s1 = s1;
     this.s1.setPosition(0.5);
-    this.sensor = sensor;
+    //this.sensor = sensor;
   }
 
   public void forward() {
@@ -49,6 +49,13 @@ public class Drive {
       this.m3.setPower(1);
       this.m4.setPower(1);
     }
+  }
+
+  public void power(double pw) {
+    this.m1.setPower(pw);
+    this.m2.setPower(pw);
+    this.m3.setPower(pw);
+    this.m4.setPower(pw);
   }
 
   public void backward() {
@@ -66,18 +73,23 @@ public class Drive {
       this.m2.setPower(0);
       this.m3.setPower(0);
       this.m4.setPower(0);
+      this.running = false;
     }
+  }
+
+  public void turn(double pos) {
+    this.s1.setPosition(pos);
   }
 
   public void turnLeft() {
     if (this.running) {
-      this.s1.setPosition(1);
+      this.s1.setPosition(0);
     }
   }
 
   public void turnRight() {
     if (this.running) {
-      this.s1.setPosition(0);
+      this.s1.setPosition(1);
     }
   }
 
@@ -87,17 +99,14 @@ public class Drive {
     }
   }
 
-  public void startEmergencyBrakeCheck() {
-    this.t1 = new Thread(() -> {
-      while (this.running) {
-        double distanceCm = this.sensor.getDistance(DistanceUnit.CM);
-        if (distanceCm < 90) {
-          this.emergencyStop();
-          this.t1.interrupt();
-        }
+  public void sleep(int ticks) {
+    int initialTick = this.m2.getCurrentPosition();
+    while(true) {
+      int currentTick = this.m2.getCurrentPosition();
+      if (currentTick >= initialTick + ticks) {
+        return;
       }
-    });
-    this.t1.start();
+    }
   }
 
   public void emergencyStop() {
